@@ -19,6 +19,7 @@ import argparse
 import numpy as np
 import torch
 import torch.nn as nn
+import pandas as pd
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
 import torch.utils.data as Data
@@ -31,7 +32,7 @@ parser.add_argument("--farm_number", type=int, default=1, help="number of wind f
 parser.add_argument("--batch_size", type=int, default=50, help="size of the batches")
 parser.add_argument("--lr", type=float, default=0.001, help="RMSprop: learning rate")
 parser.add_argument("--target_step", type=int, default=24, help="define the target temporal step")
-parser.add_argument("--scenario_number", type=int, default=500, help="define the scenario number")
+parser.add_argument("--scenario_number", type=int, default=100, help="define the scenario number")
 parser.add_argument("--test_number", type=int, default=0, help="the number of test sample")
 parser.add_argument("--seed", default=0, type=int)
 
@@ -55,6 +56,7 @@ def dataload_data(input_data, target_data, BATCH_SIZE):
         shuffle=True,  # random shuffle for training
     )
     return train_loader
+
 """---------------------------------------------Define IQN Networks----------------------------------------------"""
 
 # Implicit Quantile Network Decoder Network
@@ -62,7 +64,7 @@ class IQN_Decoder(nn.Module):
     def __init__(self):
         super(IQN_Decoder, self).__init__()
 
-        self.input = 6
+        self.input = 12
         self.channel = 32
 
         self.input = nn.Conv2d(
@@ -171,7 +173,7 @@ class IQN_Encoder(nn.Module):
     def __init__(self):
         super(IQN_Encoder, self).__init__()
 
-        self.input = 6
+        self.input = 12
         self.channel = 32
 
         self.input = nn.Conv2d(
@@ -277,6 +279,7 @@ class IQN_Encoder(nn.Module):
         return quantile
 
 """---------------------------------------------Define DCN Networks----------------------------------------------"""
+
 # dynamic correlation network
 # input: condition data ; ouput: triangular matrix
 # The multivariate normal distribution can be parameterized either in terms of a positive definite by L
@@ -289,7 +292,7 @@ class DCN(nn.Module):
 
 
         self.conv1 = nn.Sequential(nn.ReplicationPad2d(padding=(1, 1, 0, 0)),
-                                   nn.Conv2d(in_channels=6, out_channels=8,kernel_size=(1, 3),stride=(1, 1),padding=(0, 0),dilation=(1, 1)),
+                                   nn.Conv2d(in_channels=12, out_channels=8,kernel_size=(1, 3),stride=(1, 1),padding=(0, 0),dilation=(1, 1)),
                                    nn.LeakyReLU(0.2))
 
         self.conv2 = nn.Sequential(nn.ReplicationPad2d(padding=(1, 1, 0, 0)),
@@ -338,7 +341,7 @@ def lossfunction_reconstruction(quantile1,quantile2):
 
     return loss
 
-def cholesky(A):
+def cholesky(A):  # https://blog.csdn.net/xfijun/article/details/108561962
     n = len(A)
     L = np.zeros(A.shape)
     L[0,0] = np.sqrt(A[0,0])
@@ -425,19 +428,18 @@ def train(Valid_input,Valid_target):
         total_loss = total_loss / len(train_loader.dataset)
 
         if epoch % 10 == 0:
-
-            Quantile = torch.rand(Valid_input.size(0),1,args.farm_number,args.target_step).to(device)
-            Quantile = torch.clamp(Quantile,min=1e-5,max=1-(1e-5))
+            Quantile = torch.rand(Valid_input.size(0), 1, args.farm_number, args.target_step).to(device)
+            Quantile = torch.clamp(Quantile, min=1e-5, max=1 - (1e-5))
 
             # decode data
-            forecast_scenario = Forecast_Net(Valid_input,Quantile)
-            forecast_scenario = torch.clamp(forecast_scenario,min=1e-4,max=1-(1e-4))
+            forecast_scenario = Forecast_Net(Valid_input, Quantile)
+            forecast_scenario = torch.clamp(forecast_scenario, min=1e-4, max=1 - (1e-4))
 
             Quantile = Quantile.squeeze(dim=1)
             # QR loss
             valid_loss = lossfunction_probabilistic(Valid_target, forecast_scenario, Quantile).cpu().detach().numpy()
 
-            print('epoch:', epoch, 'QR loss:', total_loss, 'Valid loss:',valid_loss)
+            print('epoch:', epoch, 'QR loss:', total_loss, 'Valid loss:', valid_loss)
 
     # Second training quantile reconstruct network
     for epoch in range(args.epoch):
@@ -578,7 +580,7 @@ def test(Test_input, Test_target):
 
 if __name__ == '__main__':
 
-    Train_input, Train_target, Valid_input, Valid_target, Test_input, Test_target = dataload.dataloder('Wind')
+    Train_input, Train_target, Valid_input, Valid_target, Test_input, Test_target = dataload.dataloder('PV')
 
     print('train sample num:',Train_input.shape[0])
     print('vaild sample num:',Valid_input.shape[0])
@@ -586,7 +588,7 @@ if __name__ == '__main__':
 
     train_loader = dataload_data(input_data=Train_input, target_data=Train_target, BATCH_SIZE=args.batch_size)
 
-    # train(Valid_input,Valid_target)
+    train(Valid_input,Valid_target)
 
     scenario, forecast, target = test(Test_input, Test_target)
     dei = evaluation_index.deterministic_evaluation_index()
@@ -599,3 +601,5 @@ if __name__ == '__main__':
     sei.main(scenario, target)
 
     figureplot.mian_plot(scenario, forecast, target)
+
+

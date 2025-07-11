@@ -26,25 +26,30 @@ It is a novel framework for short-term renewable energy scenario generation.
   seaborn~=0.12.2
   ```
 
-## 🧠 Training DCQN
+## 🧠 Training / Testing DCQN
 
 ```
-python DCQN.py
+python -m WindModel.DCQN.DCQN
+python -m PVModel.DCQN.DCQN
 ```
 
 ## 📊 Scenario Generation
 
 🌪 wind power scenario generation：
 
-<img src=".\Fig\Fig8.png" alt="Fig8" width="400px" />
+<img src=".\Fig\wind power scenario generation.png" alt="Fig8" width="400px" />
 
 ☀️ solar power scenario generation：
 
-<img src=".\Fig\Fig9.png" alt="Fig9" width="400px" />
+<img src=".\Fig\solar power scenario generation.png" alt="Fig9" width="400px" />
 
 🌍 wind dynamic temporal correlation：
 
-<img src=".\Fig\Fig10.png" alt="Fig10" width="400px" />
+<img src=".\Fig\wind dynamic temporal correlation.png" alt="Fig10" width="400px" />
+
+🌍 solar dynamic temporal correlation：
+
+<img src=".\Fig\solar dynamic temporal correlation.png" alt="Fig10" width="400px" />
 
 ## 📜 Citation
 
@@ -66,7 +71,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 💬 Contact
 
-For questions and collaborations, please contact: Xiaochong Dong: dream_dxc@163.com
+For questions and collaborations, please contact: Xiaochong Dong: dream_dxc@163.com;dream_dxc@mail.tsinghua.edu.cn
 
 ## 🌐 Acknowledgements
 

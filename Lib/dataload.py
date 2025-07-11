@@ -41,14 +41,27 @@ def Data_Preproccess(category,index,interval,step,input_time_step,target_time_st
 
     farm_number = len(index)
 
-    if category == 'Wind':
+    if category == 'PV':
+        for i in range(farm_number):
+            PV_fileNameList = "\GEFCOMSolarData\GEFCom2014zone{index}.csv".format(index=index[i])
+            PV_data = pd.read_csv(data_file_path + PV_fileNameList).values
+
+            if i == 0:
+                POWER = PV_data[:, 14:15]
+                NWP = PV_data[:, 2:14]
+
+            if i > 0:
+                POWER = np.concatenate((POWER, PV_data[:, 14:15]), axis=1)
+                NWP = np.concatenate((NWP, PV_data[:, 2:14]), axis=1)
+
+    elif category == 'Wind':
         for i in range(farm_number):
             WIND_fileNameList = "\GEFCOMWindData\GEFCom2014zone{index}.csv".format(index=index[i])
             WIND_data = pd.read_csv(data_file_path + WIND_fileNameList).values
 
             if i == 0:
                 POWER = WIND_data[:, 2:3]
-                NWP = WIND_data[:, 3:]  # 每个场站有4个NWP特征
+                NWP = WIND_data[:, 3:]
                 NWP = norm_speed(np.array(NWP, dtype=np.float64))
 
             if i > 0:
@@ -133,6 +146,7 @@ def norm(data):
     return data,max,min
 
 def dataloder(category):
+
     pwd = os.getcwd()
     grader_father = os.path.abspath(os.path.dirname(pwd) + os.path.sep + "..")
 
