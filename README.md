@@ -36,15 +36,15 @@ python DCQN.py
 
 🌪 wind power scenario generation：
 
-<img src=".\Fig\Fig8.png" alt="Fig8" style="zoom:25%;" />
+<img src=".\Fig\Fig8.png" alt="Fig8" width="200px" />
 
 ☀️ solar power scenario generation：
 
-<img src=".\Fig\Fig9.png" alt="Fig9" style="zoom:25%;" />
+<img src=".\Fig\Fig9.png" alt="Fig9" width="200px" />
 
 🌍 wind dynamic temporal correlation：
 
-<img src=".\Fig\Fig10.png" alt="Fig10" style="zoom:25%;" />
+<img src=".\Fig\Fig10.png" alt="Fig10" width="200px" />
 
 ## 📜 Citation
 
